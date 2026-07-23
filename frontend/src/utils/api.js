@@ -1,4 +1,8 @@
-const baseUrl = import.meta.env.VITE_API_URL || "/api";
+const rawBaseUrl = (import.meta.env.VITE_API_URL || "/api").trim();
+const baseUrl =
+  rawBaseUrl === "/api" || rawBaseUrl.endsWith("/api")
+    ? rawBaseUrl.replace(/\/$/, "")
+    : `${rawBaseUrl.replace(/\/$/, "")}/api`;
 
 const handleResponse = async (response) => {
   const contentType = response.headers.get("content-type");
