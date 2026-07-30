@@ -7,6 +7,11 @@ const config = {
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "car_rental",
+  port: Number(process.env.DB_PORT || 3306),
+  ssl:
+    process.env.DB_SSL === "true" || process.env.DB_SSL === "1"
+      ? { rejectUnauthorized: false }
+      : undefined,
 };
 
 async function resetAdminPassword() {
@@ -15,24 +20,35 @@ async function resetAdminPassword() {
     console.log("🔍 Connecting to database...");
     connection = await mysql.createConnection(config);
 
-    console.log("🔐 Resetting admin password...");
-    const newPassword = "admin123";
+    const adminEmail = (process.argv[2] || "admin@carental.com")
+      .trim()
+      .toLowerCase();
+    const newPassword = process.argv[3] || "admin123";
+
+    console.log(`🔐 Resetting password for ${adminEmail}...`);
     const passwordHash = bcrypt.hashSync(newPassword, 10);
 
     const [result] = await connection.query(
-      "UPDATE users SET password_hash = ? WHERE role = 'admin'",
-      [passwordHash],
+      "UPDATE users SET password_hash = ? WHERE email = ? AND role = 'admin'",
+      [passwordHash, adminEmail],
     );
 
+    if (result.affectedRows === 0) {
+      throw new Error(
+        `No admin account found for ${adminEmail}. Set its role to 'admin' first.`,
+      );
+    }
+
     console.log(`✅ Admin password reset successfully!`);
-    console.log(`   📧 Email: admin@gmail.com`);
+    console.log(`   📧 Email: ${adminEmail}`);
     console.log(`   🔑 Password: ${newPassword}`);
     console.log(`   Password Hash: ${passwordHash}`);
 
     // Verify it works
     console.log("\n🔐 Testing new password...");
     const [adminUser] = await connection.query(
-      "SELECT password_hash FROM users WHERE role = 'admin' LIMIT 1",
+      "SELECT password_hash FROM users WHERE email = ? AND role = 'admin'",
+      [adminEmail],
     );
 
     if (adminUser.length > 0) {

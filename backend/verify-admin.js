@@ -7,6 +7,11 @@ const config = {
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "car_rental",
+  port: Number(process.env.DB_PORT || 3306),
+  ssl:
+    process.env.DB_SSL === "true" || process.env.DB_SSL === "1"
+      ? { rejectUnauthorized: false }
+      : undefined,
 };
 
 async function verifyAdmin() {

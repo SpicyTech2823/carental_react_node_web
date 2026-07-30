@@ -97,12 +97,6 @@ export default function AdminLogin() {
                 {loading ? "Signing in..." : "Sign in"}
               </button>
             </form>
-
-            {message && (
-              <div className="mt-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
-                {message}
-              </div>
-            )}
           </div>
         </div>
       </div>
