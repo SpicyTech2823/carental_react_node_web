@@ -52,6 +52,11 @@ A full-stack **Car Rental Web Application** built with **React.js**, **Tailwind 
 * JWT (JSON Web Token)
 * bcrypt
 
+ ### Deployment
+ * Frontend: Netlify
+ * Backend: Render
+ * Mysql: AIVEN 
+
 ---
 
 ## 📂 Project Structure
@@ -203,4 +208,4 @@ You can add screenshots here.
 
 ## 📄 License
 
-This project is created for educational and portfolio purposes.
+This project is created for improving skill and portfolio purposes.
