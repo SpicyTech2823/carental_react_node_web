@@ -36,7 +36,6 @@ A full-stack **Car Rental Web Application** built with **React.js**, **Tailwind 
 * React.js
 * Tailwind CSS
 * React Router
-* Axios
 
 ### Backend
 
@@ -175,15 +174,9 @@ http://localhost:5173
 
 ---
 
-## 📸 Screenshots
+## 📸 Live
 
-You can add screenshots here.
-
-* Home Page
-* Car Listing
-* Car Details
-* Booking Page
-* Admin Dashboard
+https://carentalfrontend.netlify.app/
 
 ---
 
