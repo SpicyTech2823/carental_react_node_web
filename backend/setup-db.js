@@ -6,16 +6,17 @@
  * Usage: node setup-db.js
  */
 
-require("dotenv").config();
+require("./config/env");
 const mysql = require("mysql2/promise");
 const bcrypt = require("bcryptjs");
+const { getDatabaseConfig } = require("./config/database");
 
-const config = {
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "car_rental",
-};
+const config = getDatabaseConfig(false);
+const databaseName = getDatabaseConfig().database;
+
+if (!/^[a-zA-Z0-9_$]+$/.test(databaseName)) {
+  throw new Error("Database name contains unsupported characters");
+}
 
 const sqlSchema = `
 CREATE TABLE IF NOT EXISTS users (
@@ -93,7 +94,7 @@ async function setupDatabase() {
   let connection;
   try {
     // First, connect without specifying database to create it
-    console.log("📦 Connecting to MySQL server...");
+    console.log(" Connecting to MySQL server...");
     connection = await mysql.createConnection({
       host: config.host,
       user: config.user,
@@ -101,17 +102,17 @@ async function setupDatabase() {
     });
 
     // Create database
-    console.log("📁 Creating database...");
+    console.log(" Creating database...");
     await connection.query(
-      `CREATE DATABASE IF NOT EXISTS ${config.database} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+      `CREATE DATABASE IF NOT EXISTS \`${databaseName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
     );
-    console.log("✅ Database created successfully");
+    console.log(" Database created successfully");
 
     // Switch to the new database
-    await connection.query(`USE ${config.database}`);
+    await connection.query(`USE \`${databaseName}\``);
 
     // Create tables
-    console.log("📋 Creating tables...");
+    console.log(" Creating tables...");
     const statements = sqlSchema.split(";").filter((stmt) => stmt.trim());
 
     for (const statement of statements) {
@@ -119,10 +120,10 @@ async function setupDatabase() {
         await connection.query(statement);
       }
     }
-    console.log("✅ Tables created successfully");
+    console.log(" Tables created successfully");
 
     // Insert sample data
-    console.log("📝 Inserting sample data...");
+    console.log(" Inserting sample data...");
 
     // Check if admin user exists
     const [existingAdmin] = await connection.query(
@@ -142,11 +143,11 @@ async function setupDatabase() {
           "admin",
         ],
       );
-      console.log("✅ Default admin user created");
-      console.log("   📧 Email: admin@carental.com");
-      console.log("   🔑 Password: admin123");
+      console.log(" Default admin user created");
+      console.log("    Email: admin@carental.com");
+      console.log("    Password: admin123");
     } else {
-      console.log("⏭️  Admin user already exists, skipping...");
+      console.log("  Admin user already exists, skipping...");
     }
 
     // Check if sample data already exists
@@ -162,13 +163,13 @@ async function setupDatabase() {
         ('Honda Civic', 'Compact and fuel-efficient car', 45.00, 'https://via.placeholder.com/400x300?text=Honda+Civic', '["Business", "Family"]', '["AC", "Power Steering"]'),
         ('SUV Explorer', 'Spacious SUV perfect for families', 80.00, 'https://via.placeholder.com/400x300?text=SUV+Explorer', '["Family", "Adventure"]', '["AC", "7 Seater", "Sunroof", "All-Terrain Tires"]')
       `);
-      console.log("✅ Sample data inserted successfully");
+      console.log(" Sample data inserted successfully");
     } else {
-      console.log("⏭️  Sample data already exists, skipping...");
+      console.log("  Sample data already exists, skipping...");
     }
 
-    console.log("\n✨ Database setup completed successfully!");
-    console.log("\n📝 You can now:");
+    console.log("\n Database setup completed successfully!");
+    console.log("\n You can now:");
     console.log("   1. Register a new user on the login page");
     console.log("   2. Login with your credentials");
     console.log("   3. Browse and book cars\n");
@@ -176,9 +177,9 @@ async function setupDatabase() {
     await connection.end();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Database setup failed:");
+    console.error(" Database setup failed:");
     console.error(error.message);
-    console.error("\n🔧 Troubleshooting:");
+    console.error("\n Troubleshooting:");
     console.error("1. Make sure MySQL server is running");
     console.error("2. Check your credentials in backend/.env:");
     console.error(`   - DB_HOST: ${config.host}`);
@@ -193,5 +194,5 @@ async function setupDatabase() {
   }
 }
 
-console.log("🚀 Car Rental App - Database Setup\n");
+console.log(" Car Rental App - Database Setup\n");
 setupDatabase();

@@ -2,44 +2,35 @@ require("dotenv").config();
 const mysql = require("mysql2/promise");
 const bcrypt = require("bcryptjs");
 
-const config = {
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "car_rental",
-  port: Number(process.env.DB_PORT || 3306),
-  ssl:
-    process.env.DB_SSL === "true" || process.env.DB_SSL === "1"
-      ? { rejectUnauthorized: false }
-      : undefined,
-};
+const { getDatabaseConfig } = require("./config/database");
+const config = getDatabaseConfig();
 
 async function verifyAdmin() {
   let connection;
   try {
-    console.log("🔍 Connecting to database...");
+    console.log(" Connecting to database...");
     connection = await mysql.createConnection(config);
 
-    console.log(`✅ Connected to ${config.database} database\n`);
+    console.log(`Connected to ${config.database} database\n`);
 
     // Check all users
-    console.log("📋 All users in database:");
+    console.log(" All users in database:");
     const [allUsers] = await connection.query(
       "SELECT id, name, email, role FROM users",
     );
     console.log(allUsers);
 
     // Check for admin specifically
-    console.log("\n🔐 Looking for admin user...");
+    console.log("\n Looking for admin user...");
     const [adminUsers] = await connection.query(
       "SELECT id, name, email, role, password_hash FROM users WHERE role = 'admin'",
     );
 
     if (adminUsers.length === 0) {
-      console.log("❌ No admin user found!");
+      console.log(" No admin user found!");
 
       // Create one now
-      console.log("\n➕ Creating admin user now...");
+      console.log("\n Creating admin user now...");
       const adminPassword = bcrypt.hashSync("admin123", 10);
       console.log(`   Password hash: ${adminPassword}`);
 
@@ -54,11 +45,11 @@ async function verifyAdmin() {
         ],
       );
 
-      console.log("✅ Admin user created successfully!");
-      console.log("   📧 Email: admin@carental.com");
-      console.log("   🔑 Password: admin123");
+      console.log(" Admin user created successfully!");
+      console.log("  Email: admin@carental.com");
+      console.log("   Password: admin123");
     } else {
-      console.log("✅ Admin user exists:");
+      console.log(" Admin user exists:");
       adminUsers.forEach((user) => {
         console.log(`   ID: ${user.id}`);
         console.log(`   Name: ${user.name}`);
@@ -68,7 +59,7 @@ async function verifyAdmin() {
       });
 
       // Test the password
-      console.log("\n🔐 Testing password...");
+      console.log("\n Testing password...");
       const testPassword = "admin123";
       const isValid = bcrypt.compareSync(
         testPassword,
@@ -80,7 +71,7 @@ async function verifyAdmin() {
     await connection.end();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    console.error(" Error:", error.message);
     if (connection) {
       await connection.end();
     }

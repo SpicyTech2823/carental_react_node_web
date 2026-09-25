@@ -2,22 +2,13 @@ require("dotenv").config();
 const mysql = require("mysql2/promise");
 const bcrypt = require("bcryptjs");
 
-const config = {
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "car_rental",
-  port: Number(process.env.DB_PORT || 3306),
-  ssl:
-    process.env.DB_SSL === "true" || process.env.DB_SSL === "1"
-      ? { rejectUnauthorized: false }
-      : undefined,
-};
+const { getDatabaseConfig } = require("./config/database");
+const config = getDatabaseConfig();
 
 async function resetAdminPassword() {
   let connection;
   try {
-    console.log("🔍 Connecting to database...");
+    console.log(" Connecting to database...");
     connection = await mysql.createConnection(config);
 
     const adminEmail = (process.argv[2] || "admin@carental.com")
@@ -25,7 +16,7 @@ async function resetAdminPassword() {
       .toLowerCase();
     const newPassword = process.argv[3] || "admin123";
 
-    console.log(`🔐 Resetting password for ${adminEmail}...`);
+    console.log(` Resetting password for ${adminEmail}...`);
     const passwordHash = bcrypt.hashSync(newPassword, 10);
 
     const [result] = await connection.query(
@@ -39,13 +30,13 @@ async function resetAdminPassword() {
       );
     }
 
-    console.log(`✅ Admin password reset successfully!`);
-    console.log(`   📧 Email: ${adminEmail}`);
-    console.log(`   🔑 Password: ${newPassword}`);
+    console.log(` Admin password reset successfully!`);
+    console.log(`    Email: ${adminEmail}`);
+    console.log(`    Password: ${newPassword}`);
     console.log(`   Password Hash: ${passwordHash}`);
 
     // Verify it works
-    console.log("\n🔐 Testing new password...");
+    console.log("\n Testing new password...");
     const [adminUser] = await connection.query(
       "SELECT password_hash FROM users WHERE email = ? AND role = 'admin'",
       [adminEmail],
@@ -57,14 +48,14 @@ async function resetAdminPassword() {
         adminUser[0].password_hash,
       );
       console.log(
-        `   Password test result: ${isValid ? "✅ VALID" : "❌ INVALID"}`,
+        `   Password test result: ${isValid ? " VALID" : " INVALID"}`,
       );
     }
 
     await connection.end();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    console.error(" Error:", error.message);
     if (connection) {
       await connection.end();
     }
